@@ -1,0 +1,130 @@
+import { PRIVATE_SIGNING_SECRET } from '$env/static/private';
+import { PUBLIC_CONTENT_MODERATION_API } from '$env/static/public';
+import { error, json } from '@sveltejs/kit';
+import { Webhook } from 'svix';
+import type { RequestHandler } from './$types';
+
+function getSvixHeaders(headers) {
+  // Get Svix headers for verification
+  const svix_id = headers.get('svix-id');
+  console.log(svix_id);
+  const svix_timestamp = headers.get('svix-timestamp');
+  const svix_signature = headers.get('svix-signature');
+  return {
+    svix_id,
+    svix_signature,
+    svix_timestamp
+  };
+}
+
+function getEvt(wh, payload, svix_id, svix_signature, svix_timestamp) {
+  let evt;
+  // Attempt to verify the incoming webhook
+  // If successful, the payload will be available from 'evt'
+  // If verification fails, error out and return error code
+  try {
+    evt = wh.verify(payload, {
+      'svix-id': svix_id as string,
+      'svix-timestamp': svix_timestamp as string,
+      'svix-signature': svix_signature as string
+    });
+    return evt;
+  } catch (err) {
+    console.log(err);
+    console.log('Error: Could not verify webhook:', err.message);
+    return { error: err?.message };
+  }
+}
+
+const handlers = new Map([
+  ['created', 'upsert'],
+  ['updated', 'upsert'],
+  ['deleted', 'delete']
+]);
+
+export const POST: RequestHandler = async ({ request }) => {
+  console.log(PRIVATE_SIGNING_SECRET, request);
+  if (!PRIVATE_SIGNING_SECRET) {
+    throw new Error('Error: Please add PRIVATE_SIGNING_SECRET from Clerk Dashboard to .env');
+  } else {
+    console.log(PRIVATE_SIGNING_SECRET);
+  }
+  const wh = new Webhook(PRIVATE_SIGNING_SECRET);
+  const headers = request.headers as Headers;
+  let payload = '';
+  for await (const chunk of request.body) {
+    payload += chunk.toString();
+  }
+
+  const { svix_id, svix_signature, svix_timestamp } = getSvixHeaders(headers);
+
+  // If there are no headers, error out
+  if (!svix_id || !svix_timestamp || !svix_signature) {
+    return error(400, { message: 'Error: Missing svix headers' });
+  }
+
+  const evt = getEvt(wh, payload, svix_id, svix_signature, svix_timestamp);
+  if (evt?.error) {
+    return error(400, { message: error.message });
+  }
+
+  // Do something with payload
+  // For this guide, log payload to console
+  const { id } = evt.data;
+  const eventType = evt.type;
+  console.log(`Received webhook with ID ${id} and event type of ${eventType}`);
+  console.log('Webhook payload:', evt.data);
+  console.log('Webhook payload:', evt.data);
+
+  try {
+    const [entity, type] = (evt.type ?? '').split('.');
+    const handler = handlers.get(type);
+
+    if (entity !== 'user') {
+      return error(400, { message: 'Invalid entity' });
+    }
+    if (!handler) {
+      return error(400, { message: 'Invalid type' });
+    }
+
+    if (handler === 'delete') {
+      console.log(`${PUBLIC_CONTENT_MODERATION_API}/webhooks/${entity}/${handler}`);
+      const deleteResult = await fetch(
+        `${PUBLIC_CONTENT_MODERATION_API}/webhooks/${entity}/${evt.data.id}`,
+        {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      if (deleteResult.status !== 204) {
+        return error(500, { message: 'An error occurred' });
+      }
+      console.log({ deleteResult });
+      const body = await deleteResult.text();
+      console.log({ body });
+      return json({ success: true, message: 'Webhook deleted' });
+    }
+
+    const response = await fetch(`${PUBLIC_CONTENT_MODERATION_API}/webhooks/${entity}`, {
+      method: 'POST',
+      body: JSON.stringify(evt.data),
+      headers: {
+        'Content-Type': 'application/json'
+        // Authorization: `Bearer ${token}`
+      }
+    });
+    const r = await response.json();
+    console.log({ r });
+  } catch (e) {
+    console.log(e);
+    return error(500, { message: 'An error occurred' });
+  }
+
+  return json({
+    success: true,
+    message: 'Webhook received'
+  });
+  // return new Response(String(random));
+};
