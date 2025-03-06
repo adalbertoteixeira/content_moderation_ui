@@ -1,10 +1,11 @@
-import { PRIVATE_SIGNING_SECRET } from '$env/static/private';
+import { PRIVATE_META_API_VERIFY_TOKEN, PRIVATE_SIGNING_SECRET } from '$env/static/private';
 import { PUBLIC_CONTENT_MODERATION_API } from '$env/static/public';
-import { error, json } from '@sveltejs/kit';
+
+import { error, json, text } from '@sveltejs/kit';
 import { Webhook } from 'svix';
 import type { RequestHandler } from './$types';
 
-function getSvixHeaders(headers) {
+function getSvixHeaders(headers: Headers) {
   // Get Svix headers for verification
   const svix_id = headers.get('svix-id');
   console.log(svix_id);
@@ -42,6 +43,25 @@ const handlers = new Map([
   ['deleted', 'delete']
 ]);
 
+export const GET: RequestHandler = async ({ url, request, other }) => {
+  console.log(url, request, other);
+  console.log(url.searchParams);
+  if (!url?.searchParams.size) {
+    console.log('no searchParams(');
+    return error(404);
+  }
+  const hubMode = url.searchParams.get('hub.mode');
+  const hubChallenge = url.searchParams.get('hub.challenge');
+  const hubVerifyToken = url.searchParams.get('hub.verify_token');
+  if (hubMode !== 'subscribe' || hubVerifyToken !== PRIVATE_META_API_VERIFY_TOKEN) {
+    return error(404);
+  }
+
+  return text(hubChallenge);
+
+  console.log('searchParams(');
+};
+
 export const POST: RequestHandler = async ({ request }) => {
   console.log(PRIVATE_SIGNING_SECRET, request);
   if (!PRIVATE_SIGNING_SECRET) {
@@ -74,7 +94,6 @@ export const POST: RequestHandler = async ({ request }) => {
   const eventType = evt.type;
   console.log(`Received webhook with ID ${id} and event type of ${eventType}`);
   console.log('Webhook payload:', evt.data);
-  console.log('Webhook payload:', evt.data);
 
   try {
     const [entity, type] = (evt.type ?? '').split('.');
@@ -88,6 +107,7 @@ export const POST: RequestHandler = async ({ request }) => {
     }
 
     if (handler === 'delete') {
+      console.log('will try deleting user');
       console.log(`${PUBLIC_CONTENT_MODERATION_API}/webhooks/${entity}/${handler}`);
       const deleteResult = await fetch(
         `${PUBLIC_CONTENT_MODERATION_API}/webhooks/${entity}/${evt.data.id}`,
@@ -107,6 +127,7 @@ export const POST: RequestHandler = async ({ request }) => {
       return json({ success: true, message: 'Webhook deleted' });
     }
 
+    console.log(`will try upserting  user to ${PUBLIC_CONTENT_MODERATION_API}/webhooks/${entity}`);
     const response = await fetch(`${PUBLIC_CONTENT_MODERATION_API}/webhooks/${entity}`, {
       method: 'POST',
       body: JSON.stringify(evt.data),
@@ -115,7 +136,8 @@ export const POST: RequestHandler = async ({ request }) => {
         // Authorization: `Bearer ${token}`
       }
     });
-    const r = await response.json();
+    console.log('upsert response:', response);
+    const r = await response.text();
     console.log({ r });
   } catch (e) {
     console.log(e);

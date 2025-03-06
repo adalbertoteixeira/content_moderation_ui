@@ -1,31 +1,20 @@
 <script lang="ts">
-<!-- import { PUBLIC_CLERK_PUBLISHABLE_KEY, PUBLIC_CONTENT_MODERATION_API } from "$env/static/public"; -->
-import { SignIn, SignedIn, useClerkContext } from "svelte-clerk";
-import { ClerkProvider } from "svelte-clerk";
+import { SignedIn } from 'svelte-clerk';
+type LayoutProps = {};
 
-const { data, children }: LayoutProps = $props();
-// Do not destructure context or you'll lose reactivity!
-const ctx = useClerkContext();
-const userId = $derived(ctx.auth.userId);
-$inspect(ctx, userId);
-const fetchDataFromExternalResource = async () => {
-  const token = await ctx.session.getToken();
-  const response = await fetch(`${PUBLIC_CONTENT_MODERATION_API}/whoami`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-  return response.json();
-};
-$effect(async () => {
-  console.log(userId);
-  if (userId && ctx?.session) {
-    await fetchDataFromExternalResource();
-    console.log("has userid");
-  }
-});
+const { children, whoami, data, ...p }: LayoutProps = $props();
 </script>
 
 <SignedIn>
   <div>teste</div>
+  {#if data?.whoami?.instagram_usernames?.length}
+    Found IG handles:
+    {#each data.whoami.instagram_usernames as username}
+      <a href={`https://www.instagram.com/${username}`} target="_blank">@{username}</a>
+    {/each}
+  {/if}
+  {#if data?.instagram_login_href !== null}
+    <a href={data?.instagram_login_href} target="_blank">Add an Instagram account</a>
+  {/if}
+  {@render children()}
 </SignedIn>
