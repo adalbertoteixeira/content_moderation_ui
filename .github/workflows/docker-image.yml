@@ -30,7 +30,7 @@ jobs:
         env:
           PUBLIC_CONTENT_MODERATION_API: ${{ secrets.PUBLIC_CONTENT_MODERATION_API }}
           PUBLIC_INSTAGRAM_CLIENT_ID: ${{ secrets.PUBLIC_INSTAGRAM_CLIENT_ID }}
-        run: docker build -t $(echo $REGISTRY)/$(echo $IMAGE_NAME)_${{ github.ref_name }} .
+        run: docker build --build-arg PUBLIC_INSTAGRAM_CLIENT_ID=${{ secrets.PUBLIC_INSTAGRAM_CLIENT_ID }}} -t $(echo $REGISTRY)/$(echo $IMAGE_NAME)_${{ github.ref_name }} .
 
       - name: Install doctl
         uses: digitalocean/action-doctl@v2
