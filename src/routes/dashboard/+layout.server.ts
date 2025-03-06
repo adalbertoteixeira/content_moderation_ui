@@ -1,9 +1,10 @@
-import {
+import { env as publicEnv } from '$env/dynamic/public';
+import { buildClerkProps } from 'svelte-clerk/server';
+const {
   PUBLIC_CONTENT_MODERATION_API,
   PUBLIC_INSTAGRAM_AUTH_REDIRECT_URI,
   PUBLIC_INSTAGRAM_CLIENT_ID
-} from '$env/dynamic/public';
-import { buildClerkProps } from 'svelte-clerk/server';
+} = publicEnv;
 // To enable Clerk SSR support, add initial state props to the load function
 export const load = async ({ locals }) => {
   const clerkProps = buildClerkProps(locals.auth);

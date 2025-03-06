@@ -1,16 +1,10 @@
-import { PRIVATE_META_API_VERIFY_TOKEN, PRIVATE_SIGNING_SECRET } from '$env/dynamic/private';
+import { env as privateEnv } from '$env/dynamic/private';
 
 import { error, json, text } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 
-type Evt = {
-  error?: Error | { message: string };
-  type?: string;
-  data: {
-    id?: string;
-    email_addresses: { linked_to: string }[];
-  };
-};
+const { PRIVATE_META_API_VERIFY_TOKEN, PRIVATE_SIGNING_SECRET } = privateEnv;
+
 export const GET: RequestHandler = async ({ url }) => {
   if (!url?.searchParams.size) {
     console.log('no searchParams(');

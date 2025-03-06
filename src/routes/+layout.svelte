@@ -1,5 +1,5 @@
 <script lang="ts">
-import { PUBLIC_CLERK_PUBLISHABLE_KEY } from '$env/dynamic/public';
+import { env as publicEnv } from '$env/dynamic/public';
 import type { Snippet } from '@svelte';
 import {
   ClerkProvider,
@@ -9,6 +9,7 @@ import {
   UserButton,
 } from 'svelte-clerk';
 
+const { PUBLIC_CLERK_PUBLISHABLE_KEY } = publicEnv;
 const { children }: { children: Snippet } = $props();
 </script>
 

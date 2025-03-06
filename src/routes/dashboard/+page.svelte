@@ -1,6 +1,7 @@
 <script lang="ts">
-import { PUBLIC_CONTENT_MODERATION_API } from '$env/dynamic/public';
+import { env as publicEnv } from '$env/dynamic/public';
 import { ClerkLoaded, SignedIn } from 'svelte-clerk';
+const { PUBLIC_CONTENT_MODERATION_API } = publicEnv;
 async function fetchWhoami() {
   try {
     const w = await fetch(`${PUBLIC_CONTENT_MODERATION_API}/whoami`);

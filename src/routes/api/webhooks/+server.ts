@@ -1,5 +1,7 @@
-import { PRIVATE_META_API_VERIFY_TOKEN, PRIVATE_SIGNING_SECRET } from '$env/dynamic/private';
-import { PUBLIC_CONTENT_MODERATION_API } from '$env/dynamic/public';
+import { env as privateEnv } from '$env/dynamic/private';
+import { env as publicEnv } from '$env/dynamic/public';
+const { PRIVATE_META_API_VERIFY_TOKEN, PRIVATE_SIGNING_SECRET } = privateEnv;
+const { PUBLIC_CONTENT_MODERATION_API } = publicEnv;
 
 import { error, json, text } from '@sveltejs/kit';
 import { Webhook } from 'svix';
