@@ -1,7 +1,6 @@
-import { PRIVATE_META_API_VERIFY_TOKEN, PRIVATE_SIGNING_SECRET } from '$env/static/private';
+import { PRIVATE_META_API_VERIFY_TOKEN, PRIVATE_SIGNING_SECRET } from '$env/dynamic/private';
 
 import { error, json, text } from '@sveltejs/kit';
-import type { Webhook } from 'svix';
 import type { RequestHandler } from './$types';
 
 type Evt = {

@@ -1,13 +1,13 @@
 <script lang="ts">
-import { PUBLIC_CLERK_PUBLISHABLE_KEY } from "$env/static/public";
-import type { Snippet } from "@svelte";
+import { PUBLIC_CLERK_PUBLISHABLE_KEY } from '$env/dynamic/public';
+import type { Snippet } from '@svelte';
 import {
   ClerkProvider,
   SignOutButton,
   SignedIn,
   SignedOut,
   UserButton,
-} from "svelte-clerk";
+} from 'svelte-clerk';
 
 const { children }: { children: Snippet } = $props();
 </script>

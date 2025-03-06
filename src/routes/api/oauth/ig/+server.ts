@@ -1,9 +1,9 @@
-import { PRIVATE_INSTAGRAM_CLIENT_SECRET } from '$env/static/private';
+import { PRIVATE_INSTAGRAM_CLIENT_SECRET } from '$env/dynamic/private';
 import {
   PUBLIC_CONTENT_MODERATION_API,
   PUBLIC_INSTAGRAM_AUTH_REDIRECT_URI,
   PUBLIC_INSTAGRAM_CLIENT_ID
-} from '$env/static/public';
+} from '$env/dynamic/public';
 
 import { error, json, redirect, text } from '@sveltejs/kit';
 import { buildClerkProps } from 'svelte-clerk/server';

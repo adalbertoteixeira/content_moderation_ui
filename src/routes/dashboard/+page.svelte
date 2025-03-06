@@ -1,5 +1,5 @@
 <script lang="ts">
-import { PUBLIC_CONTENT_MODERATION_API } from '$env/static/public';
+import { PUBLIC_CONTENT_MODERATION_API } from '$env/dynamic/public';
 import { ClerkLoaded, SignedIn } from 'svelte-clerk';
 async function fetchWhoami() {
   try {

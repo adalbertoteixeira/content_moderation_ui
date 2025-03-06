@@ -1,5 +1,5 @@
-import { PRIVATE_META_API_VERIFY_TOKEN, PRIVATE_SIGNING_SECRET } from '$env/static/private';
-import { PUBLIC_CONTENT_MODERATION_API } from '$env/static/public';
+import { PRIVATE_META_API_VERIFY_TOKEN, PRIVATE_SIGNING_SECRET } from '$env/dynamic/private';
+import { PUBLIC_CONTENT_MODERATION_API } from '$env/dynamic/public';
 
 import { error, json, text } from '@sveltejs/kit';
 import { Webhook } from 'svix';
