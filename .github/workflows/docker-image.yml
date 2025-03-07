@@ -27,7 +27,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Build container image
-        run: docker build -t $(echo $REGISTRY)/$(echo $IMAGE_NAME)_${{ github.ref_name }} .
+        run: docker build --build-arg PUBLIC_CLERK_PUBLISHABLE_KEY=${{ secrets.PUBLIC_CLERK_PUBLISHABLE_KEY }}  --build-arg CLERK_SECRET_KEY=${{ secrets.CLERK_SECRET_KEY }} -t $(echo $REGISTRY)/$(echo $IMAGE_NAME)_${{ github.ref_name }} .
 
       - name: Install doctl
         uses: digitalocean/action-doctl@v2
