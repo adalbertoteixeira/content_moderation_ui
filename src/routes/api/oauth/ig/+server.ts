@@ -92,9 +92,7 @@ To get the access token, send a POST request to the https://api.instagram.com/oa
   return redirect(307, '/dashboard');
 }
 
-export const GET: RequestHandler = async ({ url, request, locals, ...other }, ...a) => {
-  console.log({ url, request, other, a });
-
+export const GET: RequestHandler = async ({ url, locals }) => {
   const clerkProps = buildClerkProps(locals.auth);
   const clerkUserId = clerkProps?.initialState?.userId;
   if (!clerkUserId) {
